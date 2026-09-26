@@ -3,16 +3,27 @@
 n8n is a flexible AI workflow automation for technical teams.
 It allows you to build flexible workflows focused on deep data integration.
 
+This fork publishes `ghcr.io/antonwantstosleep/n8n`. Release `0.1.0` pins Postgres 16.15, n8n 2.40.7 and runners 2.40.7. Upstream remains [NethServer/ns8-n8n](https://github.com/NethServer/ns8-n8n).
+
+Software Center repository: `https://antonwantstosleep.github.io/ns8-repo/`
+
+To publish a newer n8n, set the same tag on `n8nio/n8n` and `n8nio/runners` in `build-images.sh`, then tag the module. Keep Postgres on 16.x unless you plan a dump and restore.
+
+```bash
+git tag 0.1.1
+git push origin main --follow-tags
+```
+
 ## Install
 
 Instantiate the module with:
 
-    add-module ghcr.io/nethserver/n8n:latest 1
+    add-module ghcr.io/antonwantstosleep/n8n:0.1.0 1
 
 The output of the command will return the instance name.
 Output example:
 
-    {"module_id": "n8n", "image_name": "n8n", "image_url": "ghcr.io/nethserver/n8n:latest"}
+    {"module_id": "n8n", "image_name": "n8n", "image_url": "ghcr.io/antonwantstosleep/n8n:0.1.0"}
 
 ## Configure
 
@@ -78,7 +89,7 @@ To uninstall the instance:
 
 Test the module using the `test-module.sh` script:
 
-    ./test-module.sh <NODE_ADDR> ghcr.io/nethserver/n8n:latest
+    ./test-module.sh <NODE_ADDR> ghcr.io/antonwantstosleep/n8n:0.1.0
 
 The tests are made using [Robot Framework](https://robotframework.org/)
 

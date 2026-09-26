@@ -7,9 +7,6 @@ on:
         description: "Debug shell"
         required: true
         type: boolean
-  workflow_run:
-    workflows: ["Publish images"]
-    types: [completed]
 
 jobs:
   module:

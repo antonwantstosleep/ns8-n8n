@@ -16,8 +16,8 @@
   ],
   "docs": {
     "documentation_url": "https://docs.n8n.io/",
-    "bug_url": "https://github.com/NethServer/dev",
-    "code_url": "https://github.com/NethServer/ns8-n8n"
+    "bug_url": "https://github.com/antonwantstosleep/ns8-n8n/issues",
+    "code_url": "https://github.com/antonwantstosleep/ns8-n8n"
   },
-  "source": "ghcr.io/nethserver/n8n"
+  "source": "ghcr.io/antonwantstosleep/n8n"
 }
