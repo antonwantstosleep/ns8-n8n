@@ -71,3 +71,4 @@ else
     for image in "${images[@],,}"; do printf "  buildah push %s docker://%s:%s\n" "${image}" "${image}" "${IMAGETAG:-latest}" ; done
     printf "\n"
 fi
+
