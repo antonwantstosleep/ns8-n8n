@@ -1,6 +1,104 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Inlined equivalent of local>NethServer/.github:ns8-automerge (that preset is ns8 plus :automergePatch; ns8 extends base). local> presets are not readable from outside the NethServer organization.",
   "extends": [
-    "local>NethServer/.github:ns8"
+    "config:recommended",
+    ":disableDependencyDashboard",
+    ":enableVulnerabilityAlerts",
+    ":automergePatch"
+  ],
+  "osvVulnerabilityAlerts": true,
+  "minimumReleaseAge": "5 days",
+  "branchPrefix": "renovate-",
+  "branchNameStrict": true,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "ignoreDeps": ["vue"]
+  },
+  "rebaseWhen": "automerging",
+  "keepUpdatedLabel": "auto-update",
+  "packageRules": [
+    {
+      "description": "Enable digest pinning only for Debian and Ubuntu base images",
+      "matchManagers": ["dockerfile"],
+      "matchDepNames": [
+        "docker.io/library/debian",
+        "docker.io/library/ubuntu"
+      ],
+      "matchFileNames": ["/(^|/)Containerfile$/", "/(^|/)Dockerfile$/"],
+      "pinDigests": true,
+      "automerge": true
+    },
+    {
+      "description": "Disable major version upgrades for all npm packages. Useful to avoid major updates of Vue ecosystem and Carbon.",
+      "matchDatasources": ["npm"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Disable updates for Vue CLI monorepo packages to avoid node and @achrinza/node-ipc compatibility issues",
+      "matchPackageNames": ["/^@vue/cli-/", "/@vue/cli/"],
+      "enabled": false
+    },
+    {
+      "description": "Debian and Ubuntu package updates extracted from Containerfile and Dockerfile pins. The ns8 custom managers set this groupName and groupSlug; current Renovate rejects those fields on customManagers.",
+      "matchDatasources": ["deb"],
+      "groupName": "Debian/Ubuntu packages",
+      "groupSlug": "deb-update"
+    },
+    {
+      "description": "Judgment: n8nio/n8n and n8nio/runners are pinned to the same tag in build-images.sh. The ns8 image regex updates each name on its own and has already opened one-sided bumps.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["n8nio/n8n", "n8nio/runners"],
+      "matchFileNames": ["/(^|/)build-images\\.sh$/"],
+      "groupName": "n8n and runners",
+      "groupSlug": "n8n-runners"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Debian packages annotated with renovate-debian",
+      "managerFilePatterns": ["/(^|/)Containerfile$/", "/(^|/)Dockerfile$/"],
+      "matchStringsStrategy": "recursive",
+      "matchStrings": [
+        "#\\s*renovate-debian:\\s*(suite=(?<suite>.*))?[\\s\\S]+",
+        "(?:^|\\s)(?<depName>[a-z0-9][a-z0-9+._-]+?)=(?<currentValue>[0-9]+[^\\s]*?)(?:\\s|\\\\|$)"
+      ],
+      "datasourceTemplate": "deb",
+      "versioningTemplate": "deb",
+      "registryUrlTemplate": "https://deb.debian.org/debian?suite={{#if suite }}{{suite}}{{else}}stable{{/if}}&components=main,contrib,non-free&binaryArch=amd64"
+    },
+    {
+      "customType": "regex",
+      "description": "Ubuntu packages annotated with renovate-ubuntu",
+      "managerFilePatterns": ["/(^|/)Containerfile$/", "/(^|/)Dockerfile$/"],
+      "matchStringsStrategy": "recursive",
+      "matchStrings": [
+        "#\\s*renovate-ubuntu:\\s*(suite=(?<suite>.*))?[\\s\\S]+",
+        "(?:^|\\s)(?<depName>[a-z0-9][a-z0-9+._-]+?)=(?<currentValue>[0-9]+[^\\s]*?)(?:\\s|\\\\|$)"
+      ],
+      "datasourceTemplate": "deb",
+      "versioningTemplate": "deb",
+      "registryUrlTemplate": "https://archive.ubuntu.com/ubuntu?suite={{#if suite }}{{suite}}{{else}}noble{{/if}}&components=main,universe,restricted,multiverse&binaryArch=amd64"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)build-images?\\.sh$/"],
+      "matchStrings": [
+        "docker\\.io\\/(?:library\\/)?(?<depName>[-0-9a-z_\\/.]+):(?<currentValue>[-0-9a-zA-Z_.]+)(@(?<currentDigest>sha256:[0-9a-f]+))?",
+        "(?<depName>(?:ghcr|quay)\\.io\\/[-0-9a-z_\\/.]+):(?<currentValue>[-0-9a-zA-Z_.]+)(@(?<currentDigest>sha256:[0-9a-f]+))?"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Bump *_version/*_VERSION shell variables annotated with a `# renovate: datasource=... packageName=...` comment",
+      "managerFilePatterns": ["/(^|/)build-images?\\.sh$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+?) packageName=(?<packageName>.+?)\\s*\\n\\s*\\w+_version=(?<currentValue>\\S+)",
+        "# renovate: datasource=(?<datasource>[a-z-]+?) packageName=(?<packageName>.+?)\\s*\\n\\s*\\w+_VERSION=(?<currentValue>\\S+)"
+      ]
+    }
   ]
 }
