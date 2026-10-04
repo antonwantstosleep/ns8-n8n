@@ -1,0 +1,33 @@
+name: Reindex Software Center
+
+# Start the Software Center rebuild in antonwantstosleep/ns8-repo after a
+# version tag is pushed. A push to main only publishes the testing image
+# and must not match. Kept out of publish-images.yml so a missing
+# NS8_REPO_DISPATCH_TOKEN cannot fail the image build.
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+-*"
+
+permissions:
+  contents: read
+
+jobs:
+  reindex:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch ns8-repo reindex
+        env:
+          NS8_REPO_DISPATCH_TOKEN: ${{ secrets.NS8_REPO_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "${NS8_REPO_DISPATCH_TOKEN}" ]; then
+            echo "::error::NS8_REPO_DISPATCH_TOKEN is not set"
+            exit 1
+          fi
+          curl --fail-with-body -sS -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${NS8_REPO_DISPATCH_TOKEN}" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/antonwantstosleep/ns8-repo/actions/workflows/reindex.yml/dispatches \
+            -d '{"ref":"main"}'
