@@ -45,14 +45,6 @@
       "matchDatasources": ["deb"],
       "groupName": "Debian/Ubuntu packages",
       "groupSlug": "deb-update"
-    },
-    {
-      "description": "Judgment: n8nio/n8n and n8nio/runners are pinned to the same tag in build-images.sh. The ns8 image regex updates each name on its own and has already opened one-sided bumps.",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": ["n8nio/n8n", "n8nio/runners"],
-      "matchFileNames": ["/(^|/)build-images\\.sh$/"],
-      "groupName": "n8n and runners",
-      "groupSlug": "n8n-runners"
     }
   ],
   "customManagers": [
@@ -84,9 +76,22 @@
     },
     {
       "customType": "regex",
+      "description": "n8n and runners are one release and must share a tag. Captured as a single docker dependency (lookup n8nio/n8n); autoReplaceStringTemplate writes both pins. A packageRule group cannot: Renovate filters each image on its own, then drops a pending sibling from a branch that already has one ready update (groupSingleUpdates defaults to false since 43.237.0). That is how the 2.42.1 re-push left runners at 2.41.4. The generic image manager below skips these two names so they are not also updated independently. No automerge here; patch automerge stays the repo-wide :automergePatch preset.",
       "managerFilePatterns": ["/(^|/)build-images?\\.sh$/"],
       "matchStrings": [
-        "docker\\.io\\/(?:library\\/)?(?<depName>[-0-9a-z_\\/.]+):(?<currentValue>[-0-9a-zA-Z_.]+)(@(?<currentDigest>sha256:[0-9a-f]+))?",
+        "docker\\.io/n8nio/n8n:(?<currentValue>[-0-9a-zA-Z_.]+)\\s+docker\\.io/n8nio/runners:[-0-9a-zA-Z_.]+"
+      ],
+      "depNameTemplate": "n8n and runners",
+      "packageNameTemplate": "n8nio/n8n",
+      "datasourceTemplate": "docker",
+      "autoReplaceStringTemplate": "docker.io/n8nio/n8n:{{{newValue}}} docker.io/n8nio/runners:{{{newValue}}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Other image pins in build-images.sh. n8nio/n8n and n8nio/runners are excluded; the manager above updates that pair together.",
+      "managerFilePatterns": ["/(^|/)build-images?\\.sh$/"],
+      "matchStrings": [
+        "docker\\.io\\/(?:library\\/)?(?<depName>(?!n8nio\\/n8n:|n8nio\\/runners:)[-0-9a-z_\\/.]+):(?<currentValue>[-0-9a-zA-Z_.]+)(@(?<currentDigest>sha256:[0-9a-f]+))?",
         "(?<depName>(?:ghcr|quay)\\.io\\/[-0-9a-z_\\/.]+):(?<currentValue>[-0-9a-zA-Z_.]+)(@(?<currentDigest>sha256:[0-9a-f]+))?"
       ],
       "datasourceTemplate": "docker"
